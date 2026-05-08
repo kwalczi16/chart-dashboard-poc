@@ -1,21 +1,20 @@
-import { Card, Title, BarChart } from '@tremor/react'
-import { traffic } from '../data/mock'
+import { BarChart } from '@/components/tremor/BarChart';
+import { Card } from '@/components/ui/card';
+import { trafficSeries } from '@/data/mock';
 
 export function TrafficBarChart() {
   return (
-    <Card>
-      <Title>Traffic summary</Title>
+    <Card className="p-4">
+      <h3 className="text-base font-semibold tracking-tight">Traffic summary</h3>
       <BarChart
         className="mt-4 h-72"
-        data={traffic}
-        index="day"
-        categories={['visitors', 'signups']}
+        data={trafficSeries}
+        index="date"
+        categories={['newVisitors', 'returningVisitors']}
         colors={['blue', 'emerald']}
-        stack
-        showLegend
-        showGridLines={false}
+        type="stacked"
         yAxisWidth={40}
       />
     </Card>
-  )
+  );
 }

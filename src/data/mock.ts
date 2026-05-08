@@ -1,69 +1,144 @@
-export type TrendPoint = { date: string; value: number }
-export type TrafficPoint = { day: string; visitors: number; signups: number }
-export type RevenuePoint = { date: string; revenue: number }
+import type { AvailableChartColorsKeys } from '@/lib/chartUtils';
 
-export type Kpi = {
-  label: string
-  value: string
-  delta: number
-  trend: TrendPoint[]
-}
+export type KpiSparkPoint = { day: string; value: number };
 
-const days = (n: number) =>
-  Array.from({ length: n }, (_, i) => {
-    const d = new Date()
-    d.setDate(d.getDate() - (n - 1 - i))
-    return d.toISOString().slice(5, 10)
-  })
+type KpiBase = {
+  label: string;
+  period: string;
+  value: string;
+};
 
-const wave = (base: number, amp: number, n: number, phase = 0) =>
-  Array.from({ length: n }, (_, i) =>
-    Math.round(base + amp * Math.sin(i / 2 + phase) + (Math.random() - 0.5) * amp * 0.4),
-  )
+export type ChartKpi = KpiBase & {
+  kind: 'area' | 'bar';
+  delta: number;
+  color: AvailableChartColorsKeys;
+  series: KpiSparkPoint[];
+};
 
-export const kpis: Kpi[] = [
-  {
-    label: 'Sales',
-    value: '$24,560',
-    delta: 12.4,
-    trend: days(14).map((date, i) => ({ date, value: wave(120, 30, 14, 0)[i] })),
-  },
-  {
-    label: 'Revenue',
-    value: '$4,300',
-    delta: 8.1,
-    trend: days(14).map((date, i) => ({ date, value: wave(80, 20, 14, 1.2)[i] })),
-  },
-  {
-    label: 'New clients',
-    value: '6,782',
-    delta: -1.6,
-    trend: days(14).map((date, i) => ({ date, value: wave(60, 15, 14, 2.4)[i] })),
-  },
-  {
-    label: 'Active users',
-    value: '2,986',
-    delta: 4.0,
-    trend: days(14).map((date, i) => ({ date, value: wave(40, 10, 14, 3.6)[i] })),
-  },
-]
+export type ProgressKpi = KpiBase & {
+  kind: 'progress';
+  current: number;
+  target: number;
+  caption?: string;
+  tone?: 'default' | 'neutral' | 'warning' | 'error' | 'success';
+};
 
-export const traffic: TrafficPoint[] = days(28).map((day, i) => ({
-  day,
-  visitors: wave(55, 25, 28, 0)[i],
-  signups: wave(18, 8, 28, 1)[i],
-}))
+export type Kpi = ChartKpi | ProgressKpi;
 
-export const revenue: RevenuePoint[] = days(30).map((date, i) => ({
-  date,
-  revenue: wave(4200, 800, 30, 0)[i],
-}))
+export const revenueKpi: ChartKpi = {
+  kind: 'area',
+  label: 'Revenue',
+  period: 'Last 7 days',
+  value: '$4,300',
+  delta: 8,
+  color: 'emerald',
+  series: [
+    { day: 'Mon', value: 520 },
+    { day: 'Tue', value: 610 },
+    { day: 'Wed', value: 480 },
+    { day: 'Thu', value: 720 },
+    { day: 'Fri', value: 690 },
+    { day: 'Sat', value: 800 },
+    { day: 'Sun', value: 480 },
+  ],
+};
 
-export const targets = [
-  { label: 'Monthly quota', value: 78 },
-  { label: 'Storage used', value: 64 },
-  { label: 'Conversion rate', value: 42 },
-  { label: 'Customer satisfaction', value: 91 },
-]
+export const newUsersKpi: ChartKpi = {
+  kind: 'area',
+  label: 'New users',
+  period: 'Last 7 days',
+  value: '6,782',
+  delta: 12,
+  color: 'blue',
+  series: [
+    { day: 'Mon', value: 820 },
+    { day: 'Tue', value: 910 },
+    { day: 'Wed', value: 870 },
+    { day: 'Thu', value: 1020 },
+    { day: 'Fri', value: 990 },
+    { day: 'Sat', value: 1100 },
+    { day: 'Sun', value: 1072 },
+  ],
+};
 
-export const performanceScore = 73
+export const activeUsersKpi: ChartKpi = {
+  kind: 'bar',
+  label: 'Active users',
+  period: 'Last 7 days',
+  value: '2,986',
+  delta: 4,
+  color: 'violet',
+  series: [
+    { day: 'Mon', value: 380 },
+    { day: 'Tue', value: 420 },
+    { day: 'Wed', value: 410 },
+    { day: 'Thu', value: 460 },
+    { day: 'Fri', value: 440 },
+    { day: 'Sat', value: 470 },
+    { day: 'Sun', value: 406 },
+  ],
+};
+
+export const salesTargetKpi: ProgressKpi = {
+  kind: 'progress',
+  label: 'Sales target',
+  period: 'Q2 progress',
+  value: '75%',
+  current: 75,
+  target: 100,
+  caption: '$75k of $100k',
+  tone: 'success',
+};
+
+export const kpis: Kpi[] = [revenueKpi, newUsersKpi, activeUsersKpi, salesTargetKpi];
+
+export type SessionsPoint = {
+  week: string;
+  desktop: number;
+  mobile: number;
+};
+
+export const sessionsSeries: SessionsPoint[] = [
+  { week: 'W14', desktop: 1240, mobile: 980 },
+  { week: 'W15', desktop: 1320, mobile: 1050 },
+  { week: 'W16', desktop: 1180, mobile: 1120 },
+  { week: 'W17', desktop: 1410, mobile: 1290 },
+  { week: 'W18', desktop: 1280, mobile: 1380 },
+  { week: 'W19', desktop: 1520, mobile: 1450 },
+  { week: 'W20', desktop: 1390, mobile: 1610 },
+];
+
+export type Gauge = {
+  label: string;
+  value: number;
+  max: number;
+  unit?: string;
+  variant?: 'default' | 'neutral' | 'warning' | 'error' | 'success';
+  caption?: string;
+};
+
+export const goalGauge: Gauge = {
+  label: 'Quarterly goal',
+  value: 72,
+  max: 100,
+  unit: '%',
+  variant: 'success',
+  caption: '$72k of $100k target',
+};
+
+export type TrafficPoint = {
+  date: string;
+  newVisitors: number;
+  returningVisitors: number;
+};
+
+export const trafficSeries: TrafficPoint[] = [
+  { date: 'Jul 17', newVisitors: 32, returningVisitors: 18 },
+  { date: 'Jul 18', newVisitors: 41, returningVisitors: 22 },
+  { date: 'Jul 19', newVisitors: 28, returningVisitors: 16 },
+  { date: 'Jul 20', newVisitors: 47, returningVisitors: 31 },
+  { date: 'Jul 21', newVisitors: 52, returningVisitors: 28 },
+  { date: 'Jul 22', newVisitors: 38, returningVisitors: 24 },
+  { date: 'Jul 23', newVisitors: 61, returningVisitors: 35 },
+  { date: 'Jul 24', newVisitors: 44, returningVisitors: 27 },
+];

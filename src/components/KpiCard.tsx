@@ -1,41 +1,60 @@
-import { Card, BadgeDelta } from '@tremor/react'
-import { LineChart, Line, ResponsiveContainer } from 'recharts'
-import type { TrendPoint } from '../data/mock'
+import { Card } from '@/components/ui/card';
+import { DeltaBadge } from '@/components/DeltaBadge';
+import { ProgressBar } from '@/components/tremor/ProgressBar';
+import {
+  SparkAreaChart,
+  SparkBarChart,
+} from '@/components/tremor/SparkChart';
+import type { ChartKpi, Kpi } from '@/data/mock';
 
 type Props = {
-  label: string
-  value: string
-  delta: number
-  trend: TrendPoint[]
+  kpi: Kpi;
+};
+
+function ChartSparkline({ kpi }: { kpi: ChartKpi }) {
+  const common = {
+    className: 'mt-3 h-12 w-full',
+    data: kpi.series,
+    index: 'day',
+    categories: ['value'],
+    colors: [kpi.color],
+  };
+  return kpi.kind === 'bar' ? (
+    <SparkBarChart {...common} />
+  ) : (
+    <SparkAreaChart {...common} />
+  );
 }
 
-export function KpiCard({ label, value, delta, trend }: Props) {
-  const deltaType = delta > 0 ? 'increase' : delta < 0 ? 'decrease' : 'unchanged'
-  const stroke = delta >= 0 ? '#3b82f6' : '#f43f5e'
-
+export function KpiCard({ kpi }: Props) {
   return (
-    <Card className="flex flex-col gap-2">
+    <Card className="p-4">
       <div className="flex items-center justify-between">
-        <p className="text-tremor-default text-tremor-content uppercase tracking-wide">
-          {label}
-        </p>
-        <BadgeDelta deltaType={deltaType}>{`${delta > 0 ? '+' : ''}${delta}%`}</BadgeDelta>
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {kpi.label}
+        </span>
+        <span className="text-xs text-muted-foreground">{kpi.period}</span>
       </div>
-      <p className="text-tremor-metric font-semibold text-tremor-content-strong">{value}</p>
-      <div className="h-12">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={trend}>
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke={stroke}
-              strokeWidth={2}
-              dot={false}
-              isAnimationActive={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+
+      <div className="mt-2 flex items-baseline gap-2">
+        <span className="text-2xl font-semibold text-foreground">{kpi.value}</span>
+        {kpi.kind !== 'progress' && <DeltaBadge delta={kpi.delta} />}
       </div>
+
+      {kpi.kind === 'progress' ? (
+        <div className="mt-4 space-y-2">
+          <ProgressBar
+            value={kpi.current}
+            max={kpi.target}
+            variant={kpi.tone}
+          />
+          {kpi.caption && (
+            <p className="text-xs text-muted-foreground">{kpi.caption}</p>
+          )}
+        </div>
+      ) : (
+        <ChartSparkline kpi={kpi} />
+      )}
     </Card>
-  )
+  );
 }
